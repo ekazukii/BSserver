@@ -1,4 +1,6 @@
 var io = require('socket.io')(3765);
+const TOUR = 7
+const TOURADV = 8
 var player1, player2;
 var selectGrid1 = [
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
@@ -121,6 +123,11 @@ io.on('connection', function (socket) {
                 if (typeof boats1.torpilleur.pos[boats1.torpilleur.type] !== 'undefined') {
                   boatState1++
                   player1.emit('state', boatState1);
+                  if (boatState2 === boatState1) {
+                    player1.emit('state', TOUR);
+                    player2.emit('state', TOURADV);
+                    state = 1;
+                  }
                 }
               }
             }
@@ -128,6 +135,14 @@ io.on('connection', function (socket) {
         }
       }
     });
+
+    socket.on('shoot', function(id) {
+      console.log('Joueur ' + socket.player + 'veux ' + id + ' state = ' + state)
+      if (state === socket.player) {
+        console.log('Joueur ' + socket.player + 'Shoot ' + id)
+        changeTurn()
+      }
+    })
 
   } else if (typeof player2 === 'undefined'){
     socket.player = 2
@@ -205,6 +220,11 @@ io.on('connection', function (socket) {
                 if (typeof boats2.torpilleur.pos[boats2.torpilleur.type] !== 'undefined') {
                   boatState2++
                   player2.emit('state', boatState2);
+                  if (boatState2 === boatState1) {
+                    player2.emit('state', TOUR);
+                    player1.emit('state', TOURADV);
+                    state = 2;
+                  }
                 }
               }
             }
@@ -212,6 +232,14 @@ io.on('connection', function (socket) {
         }
       }
     });
+    socket.on('shoot', function(id) {
+      console.log('Joueur ' + socket.player + 'veux ' + id + ' state = ' + state)
+      if (state === socket.player) {
+        console.log('Joueur ' + socket.player + 'Shoot ' + id)
+        changeTurn()
+      }
+
+    })
 
 
   } else {
@@ -406,4 +434,21 @@ function resetGame() {
   boatState2 = 0;
 
   state = 0;
+}
+
+function changeTurn() {
+  if (state === 1) {
+    console.log('emit')
+    player1.emit('state', TOURADV)
+    player2.emit('state', TOUR)
+    state = 2
+  } else if (state === 2) {
+    console.log('emit')
+    player1.emit('state', TOUR)
+    player2.emit('state', TOURADV)
+    state = 1
+  } else {
+    var err = new Error('State is ' + state);
+    throw err;
+  }
 }

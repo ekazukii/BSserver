@@ -1,0 +1,22 @@
+{
+  "name": "bsserver",
+  "version": "0.0.1",
+  "description": "BatleShip module for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baptiste333/BSserver.git"
+  },
+  "author": "Ekazuki",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/baptiste333/BSserver/issues"
+  },
+  "homepage": "https://github.com/baptiste333/BSserver#readme",
+  "dependencies": {
+    "socket.io": "^2.1.1"
+  }
+}

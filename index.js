@@ -178,7 +178,7 @@ io.on('connection', function (socket) {
                 boats2.contreTorpilleur.pos.push(gridPos);
                 if (typeof boats2.contreTorpilleur.pos[boats2.contreTorpilleur.type] !== 'undefined') {
                   boatState2++
-                  player2.emit('boatState2', boatState2);
+                  player2.emit('state', boatState2);
                 }
               }
             }
@@ -212,6 +212,7 @@ io.on('connection', function (socket) {
         }
       }
     });
+
 
   } else {
     socket.emit('connection', 'fail');

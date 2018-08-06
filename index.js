@@ -2,7 +2,7 @@ var io = require('socket.io')(3765);
 const TOUR = 7
 const TOURADV = 8
 var player1, player2;
-var selectGrid1 = [
+var grid1 = [
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
@@ -14,7 +14,7 @@ var selectGrid1 = [
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
 ];
-var selectGrid2 = [
+var grid2 = [
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
@@ -42,6 +42,9 @@ var boats2 = {
   torpilleur : {type : 1, pos : []}
 }
 
+var listBoatsId1 = []
+var listBoatsId2 = []
+
 var boatState1 = 0;
 var boatState2 = 0;
 
@@ -59,14 +62,15 @@ io.on('connection', function (socket) {
     socket.on('click', function(id) {
       console.log('click')
       var gridPos = idToGrid(id);
-      if (selectGrid1[gridPos.row][gridPos.col] === 'empty') {
+      if (grid1[gridPos.row][gridPos.col] === 'empty') {
         console.log(boatState1)
         switch (boatState1) {
           case 1:
             if (typeof boats1.porteAvion.pos[boats1.porteAvion.type] === 'undefined') {
               if (isAlign(gridPos, boats1.porteAvion)) {
                 player1.emit('addBoat', id)
-                selectGrid1[gridPos.row][gridPos.col] = 'porteAvion';
+                listBoatsId1.push(id);
+                grid1[gridPos.row][gridPos.col] = 'porteAvion';
                 boats1.porteAvion.pos.push(gridPos);
                 if (typeof boats1.porteAvion.pos[boats1.porteAvion.type] !== 'undefined') {
                   boatState1++
@@ -79,7 +83,8 @@ io.on('connection', function (socket) {
             if (typeof boats1.croiseur.pos[boats1.croiseur.type] === 'undefined') {
               if (isAlign(gridPos, boats1.croiseur)) {
                 player1.emit('addBoat', id)
-                selectGrid1[gridPos.row][gridPos.col] = 'croiseur';
+                listBoatsId1.push(id);
+                grid1[gridPos.row][gridPos.col] = 'croiseur';
                 boats1.croiseur.pos.push(gridPos);
                 if (typeof boats1.croiseur.pos[boats1.croiseur.type] !== 'undefined') {
                   boatState1++
@@ -92,7 +97,8 @@ io.on('connection', function (socket) {
             if (typeof boats1.contreTorpilleur.pos[boats1.contreTorpilleur.type] === 'undefined') {
               if (isAlign(gridPos, boats1.contreTorpilleur)) {
                 player1.emit('addBoat', id)
-                selectGrid1[gridPos.row][gridPos.col] = 'contreTorpilleur';
+                listBoatsId1.push(id);
+                grid1[gridPos.row][gridPos.col] = 'contreTorpilleur';
                 boats1.contreTorpilleur.pos.push(gridPos);
                 if (typeof boats1.contreTorpilleur.pos[boats1.contreTorpilleur.type] !== 'undefined') {
                   boatState1++
@@ -105,7 +111,8 @@ io.on('connection', function (socket) {
             if (typeof boats1.sousMarin.pos[boats1.sousMarin.type] === 'undefined') {
               if (isAlign(gridPos, boats1.sousMarin)) {
                 player1.emit('addBoat', id)
-                selectGrid1[gridPos.row][gridPos.col] = 'sousMarin';
+                listBoatsId1.push(id);
+                grid1[gridPos.row][gridPos.col] = 'sousMarin';
                 boats1.sousMarin.pos.push(gridPos);
                 if (typeof boats1.sousMarin.pos[boats1.sousMarin.type] !== 'undefined') {
                   boatState1++
@@ -118,7 +125,8 @@ io.on('connection', function (socket) {
             if (typeof boats1.torpilleur.pos[boats1.torpilleur.type] === 'undefined') {
               if (isAlign(gridPos, boats1.torpilleur)) {
                 player1.emit('addBoat', id)
-                selectGrid1[gridPos.row][gridPos.col] = 'torpilleur';
+                listBoatsId1.push(id);
+                grid1[gridPos.row][gridPos.col] = 'torpilleur';
                 boats1.torpilleur.pos.push(gridPos);
                 if (typeof boats1.torpilleur.pos[boats1.torpilleur.type] !== 'undefined') {
                   boatState1++
@@ -127,6 +135,7 @@ io.on('connection', function (socket) {
                     player1.emit('state', TOUR);
                     player2.emit('state', TOURADV);
                     state = 1;
+                    sendListId();
                   }
                 }
               }
@@ -139,8 +148,15 @@ io.on('connection', function (socket) {
     socket.on('shoot', function(id) {
       console.log('Joueur ' + socket.player + 'veux ' + id + ' state = ' + state)
       if (state === socket.player) {
-        console.log('Joueur ' + socket.player + 'Shoot ' + id)
-        changeTurn()
+        var gridPos = idToGrid(id);
+        if (grid2[gridPos.row][gridPos.col] === 'empty') {
+          console.log('Joueur ' + socket.player + 'Shoot ' + id)
+          grid2[gridPos.row][gridPos.col] = 'shooted';
+          socket.emit('ploof', id)
+          changeTurn()
+        } else if (grid2[gridPos.row][gridPos.col] === 'porteAvion') {
+
+        }
       }
     })
 
@@ -156,14 +172,15 @@ io.on('connection', function (socket) {
     socket.on('click', function(id) {
       console.log('click')
       var gridPos = idToGrid(id);
-      if (selectGrid2[gridPos.row][gridPos.col] === 'empty') {
+      if (grid2[gridPos.row][gridPos.col] === 'empty') {
         console.log(boatState2)
         switch (boatState2) {
           case 1:
             if (typeof boats2.porteAvion.pos[boats2.porteAvion.type] === 'undefined') {
               if (isAlign(gridPos, boats2.porteAvion)) {
                 player2.emit('addBoat', id)
-                selectGrid2[gridPos.row][gridPos.col] = 'porteAvion';
+                listBoatsId2.push(id);
+                grid2[gridPos.row][gridPos.col] = 'porteAvion';
                 boats2.porteAvion.pos.push(gridPos);
                 if (typeof boats2.porteAvion.pos[boats2.porteAvion.type] !== 'undefined') {
                   boatState2++
@@ -175,8 +192,9 @@ io.on('connection', function (socket) {
           case 2:
             if (typeof boats2.croiseur.pos[boats2.croiseur.type] === 'undefined') {
               if (isAlign(gridPos, boats2.croiseur)) {
-                player2.emit('addBoat', id)
-                selectGrid2[gridPos.row][gridPos.col] = 'croiseur';
+                player2.emit('addBoat', id);
+                listBoatsId2.push(id);
+                grid2[gridPos.row][gridPos.col] = 'croiseur';
                 boats2.croiseur.pos.push(gridPos);
                 if (typeof boats2.croiseur.pos[boats2.croiseur.type] !== 'undefined') {
                   boatState2++
@@ -188,8 +206,9 @@ io.on('connection', function (socket) {
           case 3:
             if (typeof boats2.contreTorpilleur.pos[boats2.contreTorpilleur.type] === 'undefined') {
               if (isAlign(gridPos, boats2.contreTorpilleur)) {
-                player2.emit('addBoat', id)
-                selectGrid2[gridPos.row][gridPos.col] = 'contreTorpilleur';
+                player2.emit('addBoat', id);
+                listBoatsId2.push(id);
+                grid2[gridPos.row][gridPos.col] = 'contreTorpilleur';
                 boats2.contreTorpilleur.pos.push(gridPos);
                 if (typeof boats2.contreTorpilleur.pos[boats2.contreTorpilleur.type] !== 'undefined') {
                   boatState2++
@@ -201,8 +220,9 @@ io.on('connection', function (socket) {
           case 4:
             if (typeof boats2.sousMarin.pos[boats2.sousMarin.type] === 'undefined') {
               if (isAlign(gridPos, boats2.sousMarin)) {
-                player2.emit('addBoat', id)
-                selectGrid2[gridPos.row][gridPos.col] = 'sousMarin';
+                player2.emit('addBoat', id);
+                listBoatsId2.push(id);
+                grid2[gridPos.row][gridPos.col] = 'sousMarin';
                 boats2.sousMarin.pos.push(gridPos);
                 if (typeof boats2.sousMarin.pos[boats2.sousMarin.type] !== 'undefined') {
                   boatState2++
@@ -214,8 +234,9 @@ io.on('connection', function (socket) {
           case 5:
             if (typeof boats2.torpilleur.pos[boats2.torpilleur.type] === 'undefined') {
               if (isAlign(gridPos, boats2.torpilleur)) {
-                player2.emit('addBoat', id)
-                selectGrid2[gridPos.row][gridPos.col] = 'torpilleur';
+                player2.emit('addBoat', id);
+                listBoatsId2.push(id);
+                grid2[gridPos.row][gridPos.col] = 'torpilleur';
                 boats2.torpilleur.pos.push(gridPos);
                 if (typeof boats2.torpilleur.pos[boats2.torpilleur.type] !== 'undefined') {
                   boatState2++
@@ -224,6 +245,7 @@ io.on('connection', function (socket) {
                     player2.emit('state', TOUR);
                     player1.emit('state', TOURADV);
                     state = 2;
+                    sendListId();
                   }
                 }
               }
@@ -232,11 +254,17 @@ io.on('connection', function (socket) {
         }
       }
     });
+
     socket.on('shoot', function(id) {
       console.log('Joueur ' + socket.player + 'veux ' + id + ' state = ' + state)
       if (state === socket.player) {
-        console.log('Joueur ' + socket.player + 'Shoot ' + id)
-        changeTurn()
+        var gridPos = idToGrid(id);
+        if (grid1[gridPos.row][gridPos.col] === 'empty') {
+          console.log('Joueur ' + socket.player + 'Shoot ' + id)
+          grid1[gridPos.row][gridPos.col] = 'shooted';
+          socket.emit('ploof', id)
+          changeTurn()
+        }
       }
 
     })
@@ -389,7 +417,7 @@ function isAlign(gridPos, boat) {
 }
 
 function resetGame() {
-  selectGrid1 = [
+  grid1 = [
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
@@ -401,7 +429,7 @@ function resetGame() {
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
   ];
-  selectGrid2 = [
+  grid2 = [
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
     ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
@@ -450,5 +478,15 @@ function changeTurn() {
   } else {
     var err = new Error('State is ' + state);
     throw err;
+  }
+}
+
+function sendListId() {
+  for (var i = 0; i < listBoatsId1.length; i++) {
+    player1.emit('listId', listBoatsId1[i].replace('-selection', ''))
+  }
+
+  for (var i = 0; i < listBoatsId2.length; i++) {
+    player2.emit('listId', listBoatsId2[i].replace('-selection', ''))
   }
 }

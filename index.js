@@ -55,13 +55,6 @@ module.exports = function(end, port) {
   var state = 0;
 
   io.on("connection", function (socket) {
-    var cookie = socket.handshake.headers.cookie;
-    var splited = cookie.split(';');
-    var obj = {}
-    for (var i = 0; i < splited.length; i++) {
-      var keyValue = splited[i].split('=');
-      obj[keyValue[0].replace(' ','')] = keyValue[1].replace(' ','');
-    }
 
     console.log("connect");
     if (typeof player1 === "undefined") {
@@ -72,14 +65,6 @@ module.exports = function(end, port) {
       socket.emit("player", "1");
       socket.emit("state", 0);
       console.log("player1 connected");
-
-      var rawId = obj.valjeux.split('.')[0]
-      var id = rawId.replace('s%3A', '')
-      id1 = id;
-      socket.id = id;
-      player1.id = id;
-
-      console.log(id)
 
       socket.on("click", function(id) {
         var gridPos = idToGrid(id);
@@ -219,7 +204,7 @@ module.exports = function(end, port) {
             state = 3;
             player1.emit("state", 10);
             player2.emit("state", 9);
-            end(id1, id2);
+            end(player1, player2);
             resetGame();
           }
         }
@@ -234,14 +219,6 @@ module.exports = function(end, port) {
       io.emit("state", 1);
       boatState1 = 1, boatState2 = 1;
       console.log("player2 connected");
-
-      var rawId = obj.valjeux.split('.')[0]
-      var id = rawId.replace('s%3A', '')
-      id2 = id;
-      socket.id = id;
-      player2.id = id;
-
-      console.log(id)
 
       socket.on("click", function(id) {
         var gridPos = idToGrid(id);
@@ -379,7 +356,7 @@ module.exports = function(end, port) {
           if (j2Win() === true) {
             console.log("J2 WIN")
             state = 3;
-            end(id2, id1);
+            end(player2, player1);
             player2.emit("state", 10);
             player1.emit("state", 9);
             resetGame();

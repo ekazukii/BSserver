@@ -1,5 +1,5 @@
-module.exports = function(end) {
-  var io = require("socket.io")(3765);
+module.exports = function(end, port) {
+  var io = require("socket.io")(port);
   const TOUR = 7;
   const TOURADV = 8;
   var player1, player2;

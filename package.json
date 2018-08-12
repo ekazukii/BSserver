@@ -1,6 +1,6 @@
 {
   "name": "bsserver",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "BatleShip module for nodejs",
   "main": "index.js",
   "scripts": {
